@@ -1,0 +1,5 @@
+[
+  { "id": 1, "service": "API Gateway", "status": "operational", "latency_ms": 12 },
+  { "id": 2, "service": "Database Auth", "status": "operational", "latency_ms": 5 },
+  { "id": 3, "service": "Search Index", "status": "degraded", "latency_ms": 140 }
+]
