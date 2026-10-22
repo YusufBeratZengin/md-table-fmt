@@ -1,0 +1,51 @@
+{
+  "name": "md-table-fmt",
+  "version": "0.1.0",
+  "description": "Format, lint, and convert Markdown tables (GFM) with accurate Unicode display width calculation",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "bin": {
+    "md-table": "./bin/md-table.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/**/*.test.js",
+    "lint": "node bin/md-table.js lint *.md",
+    "generate-data": "node scripts/generate-width-data.js"
+  },
+  "keywords": [
+    "markdown",
+    "gfm",
+    "table",
+    "formatter",
+    "linter",
+    "csv",
+    "tsv",
+    "json",
+    "unicode",
+    "cjk",
+    "emoji",
+    "cli"
+  ],
+  "author": "Yusuf Berat Zengin",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YusufBeratZengin/md-table-fmt.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YusufBeratZengin/md-table-fmt/issues"
+  },
+  "homepage": "https://github.com/YusufBeratZengin/md-table-fmt#readme"
+}
