@@ -84,3 +84,37 @@ test('jsonToMarkdown - array of arrays', () => {
   assert.match(md, /\| Header1 \| Header2 \|/);
   assert.match(md, /\| Row1    \| Row2    \|/);
 });
+
+test('CSV handles CRLF, bare CR, empty final fields, and quoted line breaks', () => {
+  assert.deepEqual(parseCsv('key,value\r\nalpha,"line 1\r\nline 2"\rbeta,\r\n'), [
+    ['key', 'value'], ['alpha', 'line 1\r\nline 2'], ['beta', ''],
+  ]);
+  assert.deepEqual(parseCsv('a,b,'), [['a', 'b', '']]);
+  assert.equal(serializeCsvRow(['line\rbreak', 'line\nbreak', null]), '"line\rbreak","line\nbreak",');
+});
+
+test('empty conversions preserve the documented empty result shapes', () => {
+  assert.equal(csvToMarkdown(''), '');
+  assert.equal(jsonToMarkdown('[]'), '');
+  assert.equal(jsonToMarkdown('{}'), '');
+  assert.equal(markdownToCsv('No tables here.'), '');
+  assert.equal(markdownToJson('No tables here.'), '[]');
+});
+
+test('JSON conversion unions object keys and stringifies missing and nullable values', () => {
+  const md = jsonToMarkdown('[{"item":"Alpha","score":null},{"item":"Beta","active":true}]');
+  assert.deepEqual(JSON.parse(markdownToJson(md)), [
+    { item: 'Alpha', score: '', active: '' },
+    { item: 'Beta', score: '', active: 'true' },
+  ]);
+  const arrays = jsonToMarkdown([[null, 'score'], ['Alpha', null]]);
+  assert.deepEqual(JSON.parse(markdownToJson(arrays)), [{ col_1: 'Alpha', score: '' }]);
+});
+
+test('exports select a table, fall back on an invalid index, and fill missing cells', () => {
+  const md = '| A | B |\n|---|---|\n| 1 |\n\n| State |\n|---|\n| ready |';
+  assert.equal(markdownToCsv(md, { tableIndex: 1 }), 'State\nready');
+  assert.equal(markdownToCsv(md, { tableIndex: 9 }), 'A,B\n1');
+  assert.equal(markdownToJson(md, { tableIndex: 1, indent: 0 }), '[{"State":"ready"}]');
+  assert.equal(markdownToJson(md, { tableIndex: 9, indent: 0 }), '[{"A":"1","B":""}]');
+});

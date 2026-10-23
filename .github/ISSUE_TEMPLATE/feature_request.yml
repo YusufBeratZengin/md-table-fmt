@@ -1,0 +1,26 @@
+name: Feature request
+description: Suggest a focused improvement to Markdown table workflows.
+title: '[Feature]: '
+body:
+  - type: markdown
+    attributes:
+      value: Use synthetic examples without personal information or credentials. English and Turkish are welcome.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or workflow
+      description: What are you trying to do, and what gets in the way?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Show a concrete command or API example with expected input and output.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe any workarounds and why they are insufficient.

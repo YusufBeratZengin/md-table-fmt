@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="552" viewBox="0 0 840 552" role="img" aria-labelledby="title description">
+  <title id="title">md-table-fmt terminal demo</title>
+  <desc id="description">Real output of node bin/md-table.js fmt --stdout test/fixtures/complex-tables.md: Unicode-aware Markdown tables, inline code, and escaped pipes.</desc>
+  <rect x="1" y="1" width="838" height="550" rx="16" fill="#0d1117" stroke="#30363d"/>
+  <path d="M17 1h806a16 16 0 0 1 16 16v31H1V17A16 16 0 0 1 17 1" fill="#161b22"/>
+  <circle cx="26" cy="25" r="6" fill="#ff5f57"/>
+  <circle cx="48" cy="25" r="6" fill="#febc2e"/>
+  <circle cx="70" cy="25" r="6" fill="#28c840"/>
+  <text x="420" y="30" fill="#8b949e" text-anchor="middle" font-family="ui-monospace, monospace" font-size="13">md-table-fmt</text>
+  <g font-family="'DejaVu Sans Mono', 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace" font-size="15" xml:space="preserve">
+    <text x="28" y="85" fill="#7ee787">$ node bin/md-table.js fmt --stdout test/fixtures/complex-tables.md</text>
+  </g>
+  <g fill="#e6edf3" font-family="'DejaVu Sans Mono', 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace" font-size="15" xml:space="preserve">
+    <text x="28" y="132"># Complex Markdown Tables</text>
+    <text x="28" y="156"></text>
+    <text x="28" y="180">This document contains diverse GFM tables with Unicode and inline code.</text>
+    <text x="28" y="204"></text>
+    <text x="28" y="228">| Country       | Code | Capital      |    Status    |</text>
+    <text x="28" y="252">| :------------ | :--: | :----------- | :----------: |</text>
+    <text x="28" y="276">| Japan         |  JP  | 東京 (Tokyo) | 🚀 Launching |</text>
+    <text x="28" y="300">| Turkey        |  TR  | Ankara       |  🇹🇷 Active   |</text>
+    <text x="28" y="324">| South Korea   |  KR  | 서울 (Seoul) |  👨‍👩‍👧‍👦 Family   |</text>
+    <text x="28" y="348">| United States |  US  | Washington   | ✈️ Traveling |</text>
+    <text x="28" y="372"></text>
+    <text x="28" y="396">## Code and Escapes</text>
+    <text x="28" y="420"></text>
+    <text x="28" y="444">| Command | Pipe Example                | Escaped Syntax | Notes            |</text>
+    <text x="28" y="468">| :------ | :-------------------------- | :------------- | :--------------- |</text>
+    <text x="28" y="492">| `grep`  | `cat file | grep &quot;pattern&quot;` | `cmd \| next`  | Escaped \| works |</text>
+    <text x="28" y="516">| `awk`   | `ls -la | awk &apos;{print $1}&apos;` | `\|` pipe      | Simple awk       |</text>
+  </g>
+</svg>

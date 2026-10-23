@@ -1,0 +1,47 @@
+name: Bug report
+description: Report incorrect formatting, conversion, or CLI behavior.
+title: '[Bug]: '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use synthetic input only. Remove personal information, credentials, and machine-specific paths.
+        Report vulnerabilities through [Security Advisories](https://github.com/YusufBeratZengin/md-table-fmt/security/advisories/new).
+        You can write in English or Turkish.
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      description: Output of md-table --version (or node bin/md-table.js --version).
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Node.js version, operating system, and terminal if alignment is affected.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include a command or API call and a small synthetic input document.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected output
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual output
+      description: Include the exit code and any error message.
+      render: text
+    validations:
+      required: true

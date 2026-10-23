@@ -5,31 +5,51 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
     name: Test on Node ${{ matrix.node-version }} (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         node-version: [20.x, 22.x]
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
+          package-manager-cache: false
 
       - name: Run linter
         run: npm run lint
 
-      - name: Run test suite
+      - name: Run test suite with coverage
+        if: matrix.node-version == '20.x'
         run: npm test
+
+      - name: Run test suite with 85% line coverage minimum
+        if: matrix.node-version == '22.x'
+        run: npm run test:coverage
+
+      - name: Verify generated demo
+        run: npm run demo:check
 
       - name: Verify formatting check
         run: node bin/md-table.js fmt --check test/fixtures/complex-tables.md test/fixtures/fenced-code.md

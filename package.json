@@ -20,8 +20,11 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test test/**/*.test.js",
+    "test": "node --experimental-test-coverage --test",
+    "test:coverage": "node --experimental-test-coverage --test-coverage-include=src/** --test-coverage-exclude=src/unicode-data.js --test-coverage-lines=85 --test",
     "lint": "node bin/md-table.js lint *.md",
+    "demo": "node scripts/make-demo.mjs",
+    "demo:check": "node scripts/make-demo.mjs --check",
     "generate-data": "node scripts/generate-width-data.js"
   },
   "keywords": [

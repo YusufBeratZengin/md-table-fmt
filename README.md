@@ -1,193 +1,163 @@
 # md-table-fmt
 
-Fast, zero-dependency Markdown (GFM) table formatter, linter, and converter for Node.js (>=20, ESM).
+[![CI](https://github.com/YusufBeratZengin/md-table-fmt/actions/workflows/ci.yml/badge.svg)](https://github.com/YusufBeratZengin/md-table-fmt/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Node.js >=20](https://img.shields.io/badge/node-%3E%3D20-43853d.svg)](package.json)
+[![npm version](https://img.shields.io/npm/v/md-table-fmt.svg)](https://www.npmjs.com/package/md-table-fmt)
 
-Formats, aligns, and repairs Markdown tables inside documents while skipping fenced code blocks and preserving all other text byte-for-byte. Features accurate monospace display-width calculation for wide Unicode (CJK), emoji presentation sequences, combining diacritics, regional indicator flags, and zero-width markers.
+Format, lint, sort, and convert Markdown tables with Unicode-aware alignment and zero dependencies.
 
-## Features
+[English](README.md) · [Türkçe](README.tr.md)
 
-- Zero runtime dependencies: uses native Node.js APIs and ECMAScript modules.
-- Non-destructive: preserves non-table Markdown content, empty lines, indentation, and line endings (LF/CRLF) byte-for-byte.
-- Fenced code block skipping: leaves tables inside backtick (```) and tilde (~~~) code blocks untouched.
-- Unicode display width: accurately measures East Asian Wide (UAX #11), Fullwidth, emoji presentation sequences, skin tone modifiers, ZWJ sequences, and combining characters.
-- Escaped pipes and backticks: correctly parses escaped pipes (`\|`) and inline code spans (`` `foo | bar` ``).
-- Broken row repair: normalizes uneven rows by padding missing columns and extending mismatched headers.
-- Data conversions: bidirectional conversion between Markdown tables, RFC 4180 CSV, TSV, and JSON.
-- Column sorting: sort table rows alphabetically or numerically, ascending or descending.
-- Built-in linter: detects inconsistent column counts, missing separator rows, trailing spaces, and misalignment.
-- CI ready: `fmt --check` returns exit code 1 if files require formatting.
+![Actual CLI output showing Unicode tables, inline code, and escaped pipes](docs/demo.svg)
 
-## Installation
+## Why
+
+- **Readable Unicode tables.** Measures CJK characters, combining marks, flags, and emoji sequences by display width instead of JavaScript string length.
+- **Works inside documents.** Skips backtick and tilde fenced code blocks, preserves surrounding text in documents with consistent LF or CRLF endings, and repairs uneven rows without dropping extra cells.
+- **One tool, zero dependencies.** Format and lint GFM tables, sort rows, and convert CSV, TSV, or JSON through a CLI or an ESM API. `fmt --check` fits into CI.
+
+## Quick start
+
+Requires Node.js 20 or newer. Run directly from a checkout; no package installation is needed:
 
 ```bash
-# Global installation
-npm install -g md-table-fmt
-
-# Or run directly with npx
-npx md-table-fmt --help
+git clone https://github.com/YusufBeratZengin/md-table-fmt.git
+cd md-table-fmt
+node bin/md-table.js from-json test/fixtures/sample.json
 ```
 
-## CLI Usage
-
-The CLI binary is named `md-table`.
+Output:
 
 ```text
-Usage:
-  md-table <command> [options] [arguments]
-
-Commands:
-  fmt <files...> [--check]     Format Markdown tables in files or stdin
-  lint <files...> [--strict]   Lint tables for column mismatches, missing separators, etc.
-  from-csv [file] [--tsv]      Convert CSV/TSV to formatted Markdown table
-  to-csv [file] [--tsv]        Convert Markdown table to CSV/TSV
-  from-json [file]             Convert JSON to formatted Markdown table
-  to-json [file]               Convert Markdown table to JSON array of objects
-  sort [file] --by <col>       Sort table rows by column name or 1-based index
-
-Options:
-  -c, --check                  Check if formatting is needed without writing (exit 1 if changed)
-  -b, --by <col>               Column to sort by (header name or index)
-  -d, --delimiter <char>       CSV delimiter (default: ,)
-  -t, --tsv                    Use tab delimiter for CSV operations
-  -i, --in-place               Modify file in-place (for sort)
-  --desc                       Sort descending
-  --numeric                    Sort numerically
-  --table <index>              Zero-based table index to target (default: 0)
-  --indent <n>                 JSON indentation spaces (default: 2)
-  --stdout                     Write output to stdout instead of in-place
-  -h, --help                   Show help message
-  -v, --version                Show version number
+| id  | service       | status      | latency_ms |
+| --- | ------------- | ----------- | ---------- |
+| 1   | API Gateway   | operational | 12         |
+| 2   | Database Auth | operational | 5          |
+| 3   | Search Index  | degraded    | 140        |
 ```
 
-### Examples
-
-#### Format files in-place
+The demo above is the real output of this command:
 
 ```bash
-md-table fmt README.md docs/*.md
+node bin/md-table.js fmt --stdout test/fixtures/complex-tables.md
 ```
 
-#### Check formatting in CI
+The package is named `md-table-fmt`; its installed executable is `md-table`. Once the package is published, you can also use `npm install -g md-table-fmt` or `npx --package md-table-fmt md-table --help`. The npm badge may be unavailable before the first publication.
+
+## Usage examples
+
+The examples below work from the repository root. With a global installation, replace `node bin/md-table.js` with `md-table`.
+
+### Format and lint
 
 ```bash
-md-table fmt --check README.md docs/**/*.md
+# Preview formatted tables without modifying the document
+node bin/md-table.js fmt --stdout test/fixtures/complex-tables.md
+
+# Format a document in place
+node bin/md-table.js fmt README.md
+
+# Fail CI if a document needs formatting
+node bin/md-table.js fmt --check README.md README.tr.md
+
+# Treat alignment warnings as errors
+node bin/md-table.js lint --strict README.md README.tr.md
 ```
 
-If any file contains unformatted tables, the command outputs the file path and exits with code `1`.
+`fmt --check` exits with `1` when formatting is needed and `0` when it is already correct. `lint` exits with `1` for errors; alignment warnings alone require `--strict` to fail. Lint rules cover inconsistent column counts, missing header separators, trailing whitespace, and misalignment.
 
-#### Lint Markdown tables
+For multiple files, supply paths, directories, or quoted patterns such as `"docs/**/*.md"`. Directory arguments recursively find `.md` and `.markdown` files and skip `.git` and `node_modules`. Glob support is basic; explicit paths or directories are the most predictable choice.
+
+### Convert CSV, TSV, and JSON
 
 ```bash
-md-table lint docs/**/*.md
+node bin/md-table.js from-csv test/fixtures/sample.csv
+node bin/md-table.js from-json test/fixtures/sample.json
+node bin/md-table.js to-csv test/fixtures/complex-tables.md
+node bin/md-table.js to-csv --tsv test/fixtures/complex-tables.md
+node bin/md-table.js to-json --table 1 --indent 2 test/fixtures/complex-tables.md
 ```
 
-Detects issues such as:
-- Inconsistent column counts across rows
-- Header rows missing delimiter separators (`|---|---|`)
-- Trailing whitespace on table rows
-- Misaligned table columns
+Conversions write to stdout. CSV supports quoted fields, doubled quotes, and embedded newlines. Use `from-csv --tsv` for tab-separated input or `--delimiter ";"` for a custom delimiter. Omit the file or pass `-` to read stdin.
 
-#### Convert between CSV, TSV, and Markdown
+### Sort rows
 
 ```bash
-# Convert CSV file to Markdown table
-md-table from-csv data.csv > table.md
-
-# Convert TSV file to Markdown table
-md-table from-csv --tsv data.tsv > table.md
-
-# Extract Markdown table to CSV
-md-table to-csv table.md > data.csv
-
-# Pipe from stdin
-cat data.csv | md-table from-csv
+node bin/md-table.js sort --by Country test/fixtures/complex-tables.md
+node bin/md-table.js sort --by 1 --desc test/fixtures/complex-tables.md
 ```
 
-#### Convert between JSON and Markdown
+Sort writes to stdout by default; add `--in-place` to update a file. Column names are case-insensitive and numeric column arguments are 1-based (`0` also selects the first column). Numeric sorting is detected automatically; `--numeric` forces it.
 
-```bash
-# Convert JSON array of objects to Markdown table
-md-table from-json items.json > table.md
+### JavaScript API
 
-# Extract Markdown table to JSON array
-md-table to-json table.md > items.json
-```
-
-#### Sort table rows
-
-```bash
-# Sort by column name
-md-table sort README.md --by "Salary" --numeric --desc -i
-
-# Sort by 1-based column index
-md-table sort table.md --by 2
-```
-
-## Programmatic API
-
-`md-table-fmt` provides an ESM JavaScript API:
+From a checkout, import `./src/index.js`. In an application with the package installed, import `md-table-fmt` instead.
 
 ```javascript
 import {
-  formatMarkdown,
-  formatTable,
-  lintMarkdown,
-  stringWidth,
-  csvToMarkdown,
-  markdownToCsv,
-  jsonToMarkdown,
-  markdownToJson,
-  sortMarkdown,
-} from 'md-table-fmt';
+  formatMarkdown, lintMarkdown, stringWidth,
+  csvToMarkdown, markdownToJson, sortMarkdown,
+} from './src/index.js';
 
-// Format entire Markdown file while preserving non-table text
-const formattedDoc = formatMarkdown(rawMarkdown);
-
-// Format standalone table
-const formattedTable = formatTable(`
-| Name | Age |
-|---|---|
-| Alice | 30 |
-| Bob | 25 |
-`);
-
-// Accurate display-width calculation
-console.log(stringWidth('東京')); // 4
-console.log(stringWidth('café')); // 4
-console.log(stringWidth('🚀'));   // 2
-
-// Lint tables
-const issues = lintMarkdown(rawMarkdown);
-for (const issue of issues) {
-  console.log(`${issue.line}:${issue.column} [${issue.severity}] ${issue.message}`);
-}
-
-// Convert CSV to Markdown table
-const table = csvToMarkdown('name,score\nAlice,100\nBob,85');
-
-// Sort table
+const table = csvToMarkdown('item,score\nBeta,8\nAlpha,12');
 const sorted = sortMarkdown(table, { by: 'score', desc: true, numeric: true });
+console.log(formatMarkdown(sorted));
+console.log(lintMarkdown(sorted)); // []
+console.log(stringWidth('東京')); // 4
+console.log(markdownToJson(sorted)); // Cell values are strings
 ```
 
-## Architecture and Unicode Handling
+The API also exports `formatTable`, `formatTableLines`, `formatDelimiterCell`, `formatLintReport`, `tsvToMarkdown`, `markdownToCsv`, `markdownToTsv`, `jsonToMarkdown`, `sortTableAST`, and parser/width helpers. See [src/index.js](src/index.js) for all exports and the implementation modules for JSDoc options.
 
-GFM tables are visual alignment structures rendered in fixed-width fonts. Naive character counting (`string.length`) fails when strings contain:
-1. East Asian Wide / Fullwidth characters (Chinese, Japanese, Korean) which occupy 2 display columns.
-2. Combining marks and diacritics (e.g., `e` + U+0301) which attach to base letters without advancing the cursor.
-3. Emoji presentation sequences and multi-codepoint sequences (skin tones, ZWJ sequences like family emojis, regional indicator flags).
+## Configuration
 
-`md-table-fmt` uses a generated binary-searchable interval table derived from Unicode UAX #11 East Asian Width along with `Intl.Segmenter` grapheme cluster segmentation to compute the exact visual monospace width of every cell.
+There is no configuration file or environment-variable setup. Pass CLI flags or JavaScript option objects.
 
-## Development
+| Option              | Applies to      | Default / behavior                              |
+| ------------------- | --------------- | ----------------------------------------------- |
+| `--check`, `-c`     | `fmt`           | Check without writing; exit 1 if changed        |
+| `--stdout`          | `fmt`           | Files are otherwise updated in place            |
+| `--strict`          | `lint`          | Alignment warnings become errors                |
+| `--delimiter`, `-d` | CSV conversions | Comma; use a single character                   |
+| `--tsv`             | CSV conversions | Tab delimiter                                   |
+| `--table`           | Export and sort | Zero-based table index, default 0               |
+| `--indent`          | `to-json`       | 2 spaces                                        |
+| `--by`, `-b`        | `sort`          | Required column name or index                   |
+| `--desc`            | `sort`          | Descending order; default ascending             |
+| `--numeric`         | `sort`          | Force numeric comparison; otherwise auto-detect |
+| `--in-place`        | `sort`          | Update the input file; default stdout           |
+
+Run `node bin/md-table.js --help` for the command reference. API formatting options include `alignHeader`; conversion options include `alignments`, `delimiter`, `tableIndex`, and `indent`, depending on the function.
+
+## FAQ / Limitations
+
+**Does this parse all Markdown?** It focuses on pipe tables and fenced code blocks, rather than providing a complete CommonMark parser. Tables need a delimiter row to be formatted; `lint` can report likely missing separators.
+
+**Will every terminal render Unicode identically?** Width uses generated wide/zero-width intervals and `Intl.Segmenter` grapheme clusters. Actual rendering still depends on your terminal and font, especially for emoji.
+
+**Are conversions lossless?** Exported JSON cell values are strings. Input JSON objects use the union of their keys as headers; arrays of arrays use the first row as headers. Pipes are escaped and embedded newlines become `<br>`. Literal `<br>` is decoded to a newline on export. Duplicate JSON headers overwrite earlier values, so use unique headers.
+
+**What happens to line endings and other tables?** Consistent LF or CRLF endings are preserved when formatting documents; mixed endings are normalized to CRLF. Sort targets one table but formats all parsed tables in the document. An out-of-range export index falls back to the first table.
+
+**Can I use it with CommonJS?** The package is ESM. Use dynamic `import('md-table-fmt')` from CommonJS.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and pull request guidelines. Bug reports and feature requests can be written in English or Turkish. See [SECURITY.md](SECURITY.md) for private vulnerability reporting.
 
 ```bash
-# Run unit tests
 npm test
-
-# Rebuild Unicode width data
-npm run generate-data
+npm run lint
+npm run demo:check
 ```
+
+`npm test` prints Node's built-in line, branch, and function coverage report. On Node.js 22.8 or newer, `npm run test:coverage` enforces at least 85% line coverage for `src/`, excluding the generated Unicode data table; CI runs this check on Node.js 22. No runtime or test packages need to be installed. A separate typecheck command is not currently configured.
+
+Regenerate the SVG with `npm run demo`, or rebuild Unicode interval data with `npm run generate-data`. CI runs tests with coverage on Ubuntu, Windows, and macOS with Node.js 20 and 22; CodeQL and weekly Dependabot updates are configured separately.
+
+Release highlights are in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
-MIT Copyright (c) 2026 Yusuf Berat Zengin. See [LICENSE](LICENSE) for details.
+[MIT](LICENSE).

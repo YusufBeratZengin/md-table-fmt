@@ -28,7 +28,13 @@ Execute the test suite:
 
 ```bash
 npm test
+npm run lint
+npm run demo:check
 ```
+
+`npm test` uses Node's built-in coverage reporter. Review line, branch, and function coverage and add behavior-focused tests for uncovered cases. On Node.js 22.8 or newer, `npm run test:coverage` enforces an 85% line minimum for `src/`, excluding the generated Unicode data table. CI enforces this on Node.js 22. There is currently no separate typecheck command.
+
+The README demo captures the real CLI handler output from a checked-in fixture. Run `npm run demo` after intentional CLI output changes and review `docs/demo.svg`. Keep [README.md](README.md) and [README.tr.md](README.tr.md) structurally in sync.
 
 Or run individual tests:
 

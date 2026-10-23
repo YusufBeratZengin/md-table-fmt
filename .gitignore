@@ -5,6 +5,13 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Local credentials
+.env*
+*.pem
+*.key
+*.p12
+*.pfx
+
 # Test coverage & logs
 coverage/
 .nyc_output/
