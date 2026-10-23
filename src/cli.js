@@ -75,6 +75,10 @@ export function resolveFiles(patterns) {
       continue;
     }
 
+    if (!/[*?]/.test(pattern)) {
+      throw new Error(`File not found: ${pattern}`);
+    }
+
     // Basic wildcard handling if shell didn't expand (e.g. Windows)
     if (pattern.includes('*')) {
       const isRecursive = pattern.includes('**');

@@ -118,3 +118,14 @@ test('exports select a table, fall back on an invalid index, and fill missing ce
   assert.equal(markdownToJson(md, { tableIndex: 1, indent: 0 }), '[{"State":"ready"}]');
   assert.equal(markdownToJson(md, { tableIndex: 9, indent: 0 }), '[{"A":"1","B":""}]');
 });
+
+test('csv and json input starting with a UTF-8 BOM ignore the BOM', () => {
+  assert.equal(csvToMarkdown('\uFEFFa,b\n1,2'), csvToMarkdown('a,b\n1,2'));
+  assert.equal(jsonToMarkdown('\uFEFF[{"a":1}]'), jsonToMarkdown('[{"a":1}]'));
+});
+
+test('jsonToMarkdown serializes nested objects instead of printing [object Object]', () => {
+  const md = jsonToMarkdown([{ a: { x: 1 }, b: [1, 2] }]);
+  assert.ok(!md.includes('[object Object]'));
+  assert.ok(md.includes('{"x":1}'));
+});

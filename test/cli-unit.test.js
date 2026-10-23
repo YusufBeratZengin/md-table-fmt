@@ -182,3 +182,13 @@ test('fmt and lint consume stdin when no file is given', async (t) => {
   assert.equal(await cli('lint'), 0);
   assert.match(output.stderr, /<stdin>:/);
 });
+
+test('a missing explicit file argument is an error, not a silent success', async (t) => {
+  const work = workspace(t);
+  const out = capture(t);
+  const missing = path.join(work.dir, 'yok-ş.md');
+  assert.equal(await cli('fmt', '--check', missing), 1);
+  assert.match(out.stderr, /not found/i);
+  assert.equal(await cli('lint', missing), 1);
+  assert.throws(() => resolveFiles([missing]), /not found/i);
+});

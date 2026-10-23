@@ -9,6 +9,7 @@ import { formatTableLines } from './formatter.js';
  * @returns {string[][]}
  */
 export function parseCsv(text, delimiter = ',') {
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
   const rows = [];
   let currentRow = [];
   let currentField = '';
@@ -219,8 +220,13 @@ export function markdownToTsv(markdown, options = {}) {
  * @param {Object} [options]
  * @returns {string}
  */
+function cellText(v) {
+  if (v !== null && typeof v === 'object') return JSON.stringify(v);
+  return String(v ?? '');
+}
+
 export function jsonToMarkdown(jsonData, options = {}) {
-  const data = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
+  const data = typeof jsonData === 'string' ? JSON.parse(jsonData.replace(/^﻿/, '')) : jsonData;
 
   if (!Array.isArray(data) || data.length === 0) {
     return '';
@@ -228,10 +234,10 @@ export function jsonToMarkdown(jsonData, options = {}) {
 
   // Case 1: Array of arrays
   if (Array.isArray(data[0])) {
-    const header = data[0].map((v) => escapeMarkdownCell(String(v ?? '')));
+    const header = data[0].map((v) => escapeMarkdownCell(cellText(v)));
     const alignments = options.alignments || new Array(header.length).fill('none');
     const rows = data.slice(1).map((row) =>
-      row.map((v) => escapeMarkdownCell(String(v ?? '')))
+      row.map((v) => escapeMarkdownCell(cellText(v)))
     );
     return formatTableLines({ header, alignments, rows }).join('\n');
   }
@@ -249,7 +255,7 @@ export function jsonToMarkdown(jsonData, options = {}) {
   const header = Array.from(keySet);
   const alignments = options.alignments || new Array(header.length).fill('none');
   const rows = data.map((item) =>
-    header.map((k) => escapeMarkdownCell(String(item[k] ?? '')))
+    header.map((k) => escapeMarkdownCell(cellText(item[k])))
   );
 
   return formatTableLines({ header, alignments, rows }).join('\n');
