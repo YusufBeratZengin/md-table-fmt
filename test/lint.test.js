@@ -97,3 +97,16 @@ test('formatLintReport produces readable summary', () => {
   assert.match(report, /3:1  ERROR  Data row has 2 column\(s\); expected 3 \(inconsistent-columns\)/);
   assert.match(report, /1 error\(s\), 0 warning\(s\) found/);
 });
+
+test('lintMarkdown - header column mismatch compared to delimiter', () => {
+  const md = [
+    '| Col A | Col B |',
+    '| --- | --- | --- |',
+    '| 1 | 2 | 3 |',
+  ].join('\n');
+  const issues = lintMarkdown(md);
+  const headerMismatch = issues.find((i) => i.rule === 'inconsistent-columns' && i.line === 1);
+  assert.ok(headerMismatch);
+  assert.equal(headerMismatch.severity, 'error');
+  assert.match(headerMismatch.message, /Header has 2 column\(s\); expected 3 based on delimiter row/);
+});

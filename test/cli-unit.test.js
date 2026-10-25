@@ -192,3 +192,18 @@ test('a missing explicit file argument is an error, not a silent success', async
   assert.equal(await cli('lint', missing), 1);
   assert.throws(() => resolveFiles([missing]), /not found/i);
 });
+
+test('file resolution handles unreadable directories in walk and glob gracefully', (t) => {
+  const work = workspace(t);
+  const unreadable = path.join(work.dir, 'unreadable');
+  fs.mkdirSync(unreadable);
+  const originalReaddirSync = fs.readdirSync;
+  t.mock.method(fs, 'readdirSync', (targetPath, options) => {
+    if (typeof targetPath === 'string' && targetPath.includes('unreadable')) {
+      throw new Error('EACCES: permission denied');
+    }
+    return originalReaddirSync(targetPath, options);
+  });
+  assert.deepEqual(resolveFiles([unreadable]), []);
+  assert.deepEqual(resolveFiles([path.join(unreadable, '*.md')]), []);
+});

@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { formatTable, formatMarkdown, formatDelimiterCell } from '../src/formatter.js';
+import {
+  formatTable,
+  formatTableLines,
+  formatMarkdown,
+  formatDelimiterCell,
+} from '../src/formatter.js';
 
 test('formatDelimiterCell', () => {
   assert.equal(formatDelimiterCell('left', 3), ':--');
@@ -129,4 +134,13 @@ test('formatMarkdown - preserves non-table content and fenced code byte-for-byte
   ].join('\n');
 
   assert.equal(formatMarkdown(input), expected);
+});
+
+test('formatTable - returns original string if second line is not a delimiter', () => {
+  const notTable = 'Header 1 | Header 2\nJust normal text\nRow 1 | Row 2';
+  assert.equal(formatTable(notTable), notTable);
+});
+
+test('formatTableLines - returns empty array when column count is 0', () => {
+  assert.deepEqual(formatTableLines({ header: [], alignments: [], rows: [] }), []);
 });

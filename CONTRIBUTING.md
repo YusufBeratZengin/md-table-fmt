@@ -45,6 +45,7 @@ node --test test/formatter.test.js
 node --test test/convert.test.js
 node --test test/sort.test.js
 node --test test/lint.test.js
+node --test test/cli-unit.test.js
 node --test test/cli.test.js
 ```
 

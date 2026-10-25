@@ -58,11 +58,17 @@ node bin/md-table.js fmt --stdout test/fixtures/complex-tables.md
 # Format a document in place
 node bin/md-table.js fmt README.md
 
+# Format standard input via pipe
+cat test/fixtures/complex-tables.md | node bin/md-table.js fmt
+
 # Fail CI if a document needs formatting
 node bin/md-table.js fmt --check README.md README.tr.md
 
 # Treat alignment warnings as errors
 node bin/md-table.js lint --strict README.md README.tr.md
+
+# Check all Markdown files in a directory
+node bin/md-table.js lint docs/
 ```
 
 `fmt --check` exits with `1` when formatting is needed and `0` when it is already correct. `lint` exits with `1` for errors; alignment warnings alone require `--strict` to fail. Lint rules cover inconsistent column counts, missing header separators, trailing whitespace, and misalignment.
@@ -72,8 +78,18 @@ For multiple files, supply paths, directories, or quoted patterns such as `"docs
 ### Convert CSV, TSV, and JSON
 
 ```bash
+# Convert CSV or standard input to Markdown table
 node bin/md-table.js from-csv test/fixtures/sample.csv
+cat test/fixtures/sample.csv | node bin/md-table.js from-csv
+
+# Custom delimiter or TSV
+node bin/md-table.js from-csv --delimiter ";" data.csv
+node bin/md-table.js from-csv --tsv data.tsv
+
+# Convert JSON to Markdown table
 node bin/md-table.js from-json test/fixtures/sample.json
+
+# Convert Markdown table back to CSV, TSV, or JSON
 node bin/md-table.js to-csv test/fixtures/complex-tables.md
 node bin/md-table.js to-csv --tsv test/fixtures/complex-tables.md
 node bin/md-table.js to-json --table 1 --indent 2 test/fixtures/complex-tables.md
@@ -84,8 +100,15 @@ Conversions write to stdout. CSV supports quoted fields, doubled quotes, and emb
 ### Sort rows
 
 ```bash
+# Sort by column name (case-insensitive) or 1-based column index
 node bin/md-table.js sort --by Country test/fixtures/complex-tables.md
 node bin/md-table.js sort --by 1 --desc test/fixtures/complex-tables.md
+
+# Force numeric sort and update the file in place
+node bin/md-table.js sort --by Score --desc --numeric --in-place document.md
+
+# Target a specific table in a multi-table document (0-based index)
+node bin/md-table.js sort --table 1 --by 2 document.md
 ```
 
 Sort writes to stdout by default; add `--in-place` to update a file. Column names are case-insensitive and numeric column arguments are 1-based (`0` also selects the first column). Numeric sorting is detected automatically; `--numeric` forces it.
@@ -96,16 +119,25 @@ From a checkout, import `./src/index.js`. In an application with the package ins
 
 ```javascript
 import {
-  formatMarkdown, lintMarkdown, stringWidth,
-  csvToMarkdown, markdownToJson, sortMarkdown,
+  formatMarkdown, formatTable, lintMarkdown, stringWidth,
+  csvToMarkdown, jsonToMarkdown, markdownToJson, sortMarkdown,
 } from './src/index.js';
 
+// Convert and format data
 const table = csvToMarkdown('item,score\nBeta,8\nAlpha,12');
 const sorted = sortMarkdown(table, { by: 'score', desc: true, numeric: true });
 console.log(formatMarkdown(sorted));
 console.log(lintMarkdown(sorted)); // []
 console.log(stringWidth('東京')); // 4
 console.log(markdownToJson(sorted)); // Cell values are strings
+
+// Format raw table string directly
+const quick = formatTable('|name|role|\n|---|---|\n|Alice|admin|');
+console.log(quick);
+
+// Convert JSON objects to Markdown table
+const jsonTable = jsonToMarkdown([{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]);
+console.log(jsonTable);
 ```
 
 The API also exports `formatTable`, `formatTableLines`, `formatDelimiterCell`, `formatLintReport`, `tsvToMarkdown`, `markdownToCsv`, `markdownToTsv`, `jsonToMarkdown`, `sortTableAST`, and parser/width helpers. See [src/index.js](src/index.js) for all exports and the implementation modules for JSDoc options.

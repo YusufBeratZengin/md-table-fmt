@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { sortMarkdown } from '../src/sort.js';
+import { sortMarkdown, sortTableAST } from '../src/sort.js';
 
 test('sortMarkdown - sort alphabetically ascending', () => {
   const md = [
@@ -112,4 +112,31 @@ test('sortMarkdown - preserves surrounding document text and fenced code', () =>
   const sorted = sortMarkdown(md, { by: 'Pop' });
   assert.match(sorted, /```markdown\n\| Do Not Sort \|\n\| --- \|\n\| Z \|\n\| A \|\n```/);
   assert.match(sorted, /\| Ankara   \|  5000000 \|\n\| Istanbul \| 15000000 \|/);
+});
+
+test('sortTableAST throws when "by" option is missing or empty', () => {
+  const table = {
+    header: ['A', 'B'],
+    alignments: ['none', 'none'],
+    rows: [['1', '2']],
+  };
+  assert.throws(() => sortTableAST(table, {}), /Sort option "by" is required/);
+  assert.throws(() => sortTableAST(table, { by: '' }), /Sort option "by" is required/);
+});
+
+test('sortMarkdown with tableIndex only sorts specified table', () => {
+  const md = [
+    '| H1 |',
+    '| --- |',
+    '| B |',
+    '| A |',
+    '',
+    '| H2 |',
+    '| --- |',
+    '| Z |',
+    '| Y |',
+  ].join('\n');
+  const sorted = sortMarkdown(md, { by: 'H1', tableIndex: 0 });
+  assert.match(sorted, /\| H1\s+\|\n\| ---\s+\|\n\| A\s+\|\n\| B\s+\|/);
+  assert.match(sorted, /\| H2\s+\|\n\| ---\s+\|\n\| Z\s+\|\n\| Y\s+\|/);
 });

@@ -58,11 +58,17 @@ node bin/md-table.js fmt --stdout test/fixtures/complex-tables.md
 # Belgeyi yerinde biçimlendir
 node bin/md-table.js fmt README.md
 
+# Standart girdiyi boru hattı (pipe) ile biçimlendir
+cat test/fixtures/complex-tables.md | node bin/md-table.js fmt
+
 # Biçimlendirme gerekiyorsa CI denetimini başarısız kıl
 node bin/md-table.js fmt --check README.md README.tr.md
 
 # Hizalama uyarılarını hata say
 node bin/md-table.js lint --strict README.md README.tr.md
+
+# Bir klasördeki tüm Markdown belgelerini denetle
+node bin/md-table.js lint docs/
 ```
 
 `fmt --check`, biçimlendirme gerekiyorsa `1`, gerekmiyorsa `0` çıkış kodunu döndürür. `lint`, hatalarda `1` döndürür; yalnızca hizalama uyarısı varsa başarısız olması için `--strict` gerekir. Denetleyici tutarsız sütun sayılarını, eksik başlık ayraçlarını, satır sonu boşluklarını ve hizasızlıkları bildirir.
@@ -72,8 +78,18 @@ Birden fazla dosya için dosya yolları, klasörler veya `"docs/**/*.md"` gibi t
 ### CSV, TSV ve JSON dönüşümü
 
 ```bash
+# CSV dosyasını veya standart girdiyi Markdown tablosuna dönüştür
 node bin/md-table.js from-csv test/fixtures/sample.csv
+cat test/fixtures/sample.csv | node bin/md-table.js from-csv
+
+# Özel ayırıcı veya TSV
+node bin/md-table.js from-csv --delimiter ";" data.csv
+node bin/md-table.js from-csv --tsv data.tsv
+
+# JSON verisini Markdown tablosuna dönüştür
 node bin/md-table.js from-json test/fixtures/sample.json
+
+# Markdown tablosunu CSV, TSV veya JSON biçimine geri dönüştür
 node bin/md-table.js to-csv test/fixtures/complex-tables.md
 node bin/md-table.js to-csv --tsv test/fixtures/complex-tables.md
 node bin/md-table.js to-json --table 1 --indent 2 test/fixtures/complex-tables.md
@@ -84,8 +100,15 @@ Dönüşümler standart çıktıya yazılır. CSV ayrıştırıcısı tırnak i�
 ### Satırları sıralama
 
 ```bash
+# Sütun adına (harf duyarsız) veya 1 tabanlı sütun indeksine göre sırala
 node bin/md-table.js sort --by Country test/fixtures/complex-tables.md
 node bin/md-table.js sort --by 1 --desc test/fixtures/complex-tables.md
+
+# Sayısal sıralamayı zorunlu kıl ve dosyayı yerinde güncelle
+node bin/md-table.js sort --by Score --desc --numeric --in-place document.md
+
+# Çok tablolu belgede belirli bir tabloyu hedefle (0 tabanlı indeks)
+node bin/md-table.js sort --table 1 --by 2 document.md
 ```
 
 Sıralama varsayılan olarak standart çıktıya yazılır; dosyayı güncellemek için `--in-place` ekleyin. Sütun adlarında büyük/küçük harf ayrımı yapılmaz. Sayısal sütun argümanları 1'den başlar (`0` da ilk sütunu seçer). Sayısal sıralama otomatik algılanır; `--numeric` ile zorunlu tutulabilir.
@@ -96,16 +119,25 @@ Depo içinden `./src/index.js` dosyasını içe aktarın. Paketin kurulu olduğu
 
 ```javascript
 import {
-  formatMarkdown, lintMarkdown, stringWidth,
-  csvToMarkdown, markdownToJson, sortMarkdown,
+  formatMarkdown, formatTable, lintMarkdown, stringWidth,
+  csvToMarkdown, jsonToMarkdown, markdownToJson, sortMarkdown,
 } from './src/index.js';
 
+// Veriyi dönüştür ve biçimlendir
 const tablo = csvToMarkdown('item,score\nBeta,8\nAlpha,12');
 const sirali = sortMarkdown(tablo, { by: 'score', desc: true, numeric: true });
 console.log(formatMarkdown(sirali));
 console.log(lintMarkdown(sirali)); // []
 console.log(stringWidth('東京')); // 4
 console.log(markdownToJson(sirali)); // Hücre değerleri metindir
+
+// Ham tablo metnini doğrudan biçimlendir
+const hizali = formatTable('|name|role|\n|---|---|\n|Alice|admin|');
+console.log(hizali);
+
+// JSON nesnelerini Markdown tablosuna dönüştür
+const jsonTablo = jsonToMarkdown([{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]);
+console.log(jsonTablo);
 ```
 
 API ayrıca `formatTable`, `formatTableLines`, `formatDelimiterCell`, `formatLintReport`, `tsvToMarkdown`, `markdownToCsv`, `markdownToTsv`, `jsonToMarkdown`, `sortTableAST` ile ayrıştırma ve genişlik yardımcılarını dışa aktarır. Tüm dışa aktarımlar için [src/index.js](src/index.js) dosyasına, JSDoc seçenekleri için ilgili uygulama modüllerine bakın.

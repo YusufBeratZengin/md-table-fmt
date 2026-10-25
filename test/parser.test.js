@@ -116,3 +116,22 @@ test('parseMarkdown - CRLF preservation', () => {
   assert.equal(chunks[1].type, 'table');
   assert.equal(chunks[2].type, 'text');
 });
+
+test('splitRow handles single pipe line', () => {
+  assert.deepEqual(splitRow('|'), ['']);
+});
+
+test('parseMarkdown table ended immediately by heading or code fence', () => {
+  const md = [
+    '| Col 1 | Col 2 |',
+    '| --- | --- |',
+    '| val 1 | val 2 |',
+    '# Section | Title',
+    'Some text',
+  ].join('\n');
+  const { chunks } = parseMarkdown(md);
+  assert.equal(chunks.length, 2);
+  assert.equal(chunks[0].type, 'table');
+  assert.equal(chunks[1].type, 'text');
+  assert.deepEqual(chunks[1].lines, ['# Section | Title', 'Some text']);
+});

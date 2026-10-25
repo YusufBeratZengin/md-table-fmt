@@ -70,3 +70,9 @@ test('stripAnsi', () => {
   assert.equal(stripAnsi('\u001b[31mhello\u001b[0m'), 'hello');
   assert.equal(stripAnsi('plain text'), 'plain text');
 });
+
+test('stringWidth - standalone combining marks, text presentation, and zero-width code points', () => {
+  assert.equal(stringWidth('\u0300'), 0);
+  assert.equal(stringWidth('\u2600\uFE0E'), 1);
+  assert.equal(stringWidth(String.fromCodePoint(0x180e)), 0);
+});

@@ -129,3 +129,8 @@ test('jsonToMarkdown serializes nested objects instead of printing [object Objec
   assert.ok(!md.includes('[object Object]'));
   assert.ok(md.includes('{"x":1}'));
 });
+
+test('parseCsv handles trailing newline and blank row pruning', () => {
+  assert.deepEqual(parseCsv('\n'), []);
+  assert.deepEqual(parseCsv('a,b\n\n'), [['a', 'b']]);
+});
